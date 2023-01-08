@@ -1,0 +1,1 @@
+This is the elastic set up, from install to webpage, for my home setup. 
