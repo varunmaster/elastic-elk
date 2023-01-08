@@ -3,14 +3,32 @@ import logging
 import os
 import time
 import wget
+import tarfile
+import zipfile
 
 def downloadAgent():
     if not os.name == 'nt':
-        wget.download('https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-8.5.3-linux-x86_64.tar.gz', '/var/tmp/elastic.tar.gz')
+        if not (os.path.exists("/var/tmp/elasticDownloadTemp")):
+            os.makedirs("/var/tmp/elasticDownloadTemp")
+            logging.info("Temp directory for downloading the elastic agent is created in /var/tmp/elasticDownloadTemp")
+        wget.download('https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-8.5.3-linux-x86_64.tar.gz', '/var/tmp/elasticDownloadTemp/elastic.tar.gz')
+        tarFile = tarfile.open("elastic.tar.gz")
+        tarFile.extractall("/var/tmp/elasticDownloadTemp/")
+        tarFile.close()
+
     else:
-        wget.download('https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-8.5.3-windows-x86_64.zip', 'C:\\Logs\\elastic.zip')
+        if not (os.path.exists("C:\\Temp\\elasticDownloadTemp")):
+            os.makedirs("C:\\Temp\\elasticDownloadTemp")
+            logging.info("Temp directory for downloading the elastic agent is created in C:\\Temp\elasticDownloadTemp")
+        wget.download('https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-8.5.3-windows-x86_64.zip', 'C:\\Temp\\elasticDownloadTemp\\elastic.zip')
+        zippedFile = zipfile.ZipFile("C:\\Temp\\elasticDownloadTemp\\elastic.zip", mode='r')
+        zippedFile.extractall("C:\\Temp\\elasticDownloadTemp")
+    
+    # TODO
+    # write the installation steps 
 
 def main(args):
+    # for linux it will be 'posix'
     if os.name == 'nt':
         print("Determined this is a Windows machine")
         fileLoc = 'C:\\Logs'
@@ -32,14 +50,7 @@ def main(args):
     logging.basicConfig(filename=fullLogFileNameAndLoc, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     #logging.basicConfig(filename=fullLogFileNameAndLoc, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
     logging.info("----------Script Start----------")
-    
-    
-    # TODO
-    # finish the downloadAgent method
-    #   add logic to store it in %temp% dir in windows
-    #   add logic to extract the agent and then install it 
-
-    print("args: ", args)
+    downloadAgent()
 
 if __name__ == "__main__": 
     main(sys.argv[1:])
