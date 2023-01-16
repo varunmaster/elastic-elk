@@ -7,14 +7,16 @@ import tarfile
 import zipfile
 
 def downloadAgent():
-    if not os.name == 'nt':
+    if not os.name == 'nt': #if NOT windows
         if not (os.path.exists("/var/tmp/elasticDownloadTemp")):
             os.makedirs("/var/tmp/elasticDownloadTemp")
             logging.info("Temp directory for downloading the elastic agent is created in /var/tmp/elasticDownloadTemp")
+        logging.info("[downloadAgent] starting the download of the linux elastic agent")
         wget.download('https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-8.5.3-linux-x86_64.tar.gz', '/var/tmp/elasticDownloadTemp/elastic.tar.gz')
         tarFile = tarfile.open("elastic.tar.gz")
         tarFile.extractall("/var/tmp/elasticDownloadTemp/")
         tarFile.close()
+        logging.info("[downloaddAgent] finished downloading and extracting the agent in /var/tmp/elasticDownloadTemp")
 
     else:
         if not (os.path.exists("C:\\Temp\\elasticDownloadTemp")):
@@ -50,6 +52,7 @@ def main(args):
     logging.basicConfig(filename=fullLogFileNameAndLoc, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     #logging.basicConfig(filename=fullLogFileNameAndLoc, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
     logging.info("----------Script Start----------")
+    logging.info("[main] Calling download agent method")
     downloadAgent()
 
 if __name__ == "__main__": 
