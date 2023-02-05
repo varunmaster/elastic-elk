@@ -21,12 +21,24 @@ function displayHelp() {
     ${NC}"
 }
 
+function configureElastic() {
+    # $1 --> name of the node
+    # $2 --> name of the cluster
+    # $3 --> role of the node
+    # $4 --> data path
+    # 's/[^node.name:[[:space:]]]*/something/'
+}
+
 function installElasticSearch() {
-    echo "${yellow}-->installing elastic seach and its dependencies${NC}"
+    echo "${yellow}-->starting download of elastic and dependencies${NC}"
+    echo "${yellow}-->installing java${NC}"
     yum install java -y 
+    echo "${yellow}-->getting elastic search${NC}"
     wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.6.0-x86_64.rpm
-    rpm -ivh elasticsearch-7.9.2-x86_64.rpm 
-    systemctl enable elasticsearch
+    echo "${yellow}-->installing elastic seach${NC}"
+    rpm -ivh elasticsearch-8.6.0-x86_64.rpm
+    echo "${yellow}-->enabling elastic${NC}"
+    systemctl enable elasticsearch.service
 }
 
 function updateSystem() {
