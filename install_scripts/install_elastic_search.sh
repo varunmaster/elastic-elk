@@ -1,15 +1,11 @@
 #!/bin/bash
 
-# TODO
-# configure elastic with the name and edit the config files
-# do a dry run on new VM with current script and start from step 3 from below link
-# https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-elasticsearch-on-centos-7
-
-
 #define basic global variables
 red="\033[0;31m"
 yellow="\033[1;33m"
 NC="\033[0m"
+node=""
+cluster=""
 
 function displayHelp() {
     echo "${red}\n\t*******************************************************************
@@ -21,12 +17,40 @@ function displayHelp() {
     ${NC}"
 }
 
+function configureElastic() {
+    # $1 --> name of the node
+    # $2 --> name of the cluster
+    # $3 --> role of the node 
+    #       Master --> responsible for the cluster’s health and stability
+    #       data --> nodes that will store the data
+    #       Ingest --> allows a node to accept and process data streams
+    # $4 --> data path
+    #   default location --> /var/lib/elasticsearch 
+    echo "${yellow}-->updating the config file${NC}"
+    echo "${yellow}-->updating the node name to ${1}"
+    sed -i "s/node.name:[[:space:]].*/node.name: ${1}" /etc/elasticsearch/elasticsearch.yml
+    echo "${yellow}-->updating the cluster name to ${2}"
+    sed -i "s/cluster.name:[[:space:]].*/cluster.name: ${2}" /etc/elasticsearch/elasticsearch.yml
+    #echo "${yellow}-->updating the role of the node to ${3}"
+    #sed -i "s/node.roles:[[:space:]].*/node.roles: \[ ${3} \]" /etc/elasticsearch/elasticsearch.yml
+    #echo "${yellow}-->updating the data path to ${4}"
+    #sed -i "s/path.data:[[:space:]].*/node.name: ${4}" /etc/elasticsearch/elasticsearch.
+    echo "${red}-->updating the JVM options${NC}"
+    sed -i "s/Xms.*/Xms8g/" /etc/elasticsearch/jvm.options
+    sed -i "s/Xmx.*/Xmx8g/" /etc/elasticsearch/jvm.options
+}
+
 function installElasticSearch() {
-    echo "${yellow}-->installing elastic seach and its dependencies${NC}"
+    echo "${yellow}-->starting download of elastic and dependencies${NC}"
+    echo "${yellow}-->installing java${NC}"
     yum install java -y 
+    echo "${yellow}-->getting elastic search${NC}"
     wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.6.0-x86_64.rpm
-    rpm -ivh elasticsearch-7.9.2-x86_64.rpm 
-    systemctl enable elasticsearch
+    echo "${yellow}-->installing elastic seach${NC}"
+    rpm -ivh elasticsearch-8.6.0-x86_64.rpm
+    echo "${yellow}-->enabling elastic${NC}"
+    systemctl enable elasticsearch.service
+    configureElastic "elastic-band" "elasticity"
 }
 
 function updateSystem() {
@@ -39,30 +63,18 @@ function updateSystem() {
         echo "${yellow}-->wget is not installed...installing now${NC}"
         yum install wget -y
     fi
-    installElasticSearch
+    installElasticSearch $1 $2
 }
 
-while getopts h flag; do
+while getopts hn:c: flag; do
 	case "${flag}" in
 		h | help)
 			displayHelp
 			exit 0
 			;;
-		# e)
-		# 	if [ ${OPTARG} != "PROD" ] && [ ${OPTARG} != "DEV" ]; then
-		# 		echo -e "${red}the -e flag must be either PROD or DEV exclusively (case sensitive)${NC}"
-		# 		displayHelp
-		# 		exit 1
-		# 	fi
-		# 	doInstallation ${OPTARG}
-		# 	;;
 		*)
-			displayHelp
-			exit 2
-			;;
-		\?)
-			displayHelp
-			exit 2
+			updateSystem
+            exit 0
 			;;
 	esac
 done
